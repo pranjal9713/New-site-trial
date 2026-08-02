@@ -418,3 +418,52 @@
     }
   });
 })();
+
+
+/* -------------------------------------------------------------------
+   BACKGROUND MUSIC — attempts autoplay, falls back to first interaction
+   ------------------------------------------------------------------- */
+function initMusic() {
+  const audio = document.getElementById('bgMusic');
+  const toggle = document.getElementById('musicToggle');
+  const icon = toggle.querySelector('.music-icon');
+  if (!audio) return;
+
+  audio.volume = 0.55;
+
+  function setPlayingUI(isPlaying) {
+    icon.classList.toggle('playing', isPlaying);
+    icon.classList.toggle('paused', !isPlaying);
+    toggle.setAttribute('aria-label', isPlaying ? 'Pause music' : 'Play music');
+  }
+
+  function tryPlay() {
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => setPlayingUI(true))
+        .catch(() => {
+          // Autoplay blocked — start on the first user interaction instead
+          setPlayingUI(false);
+          const resume = () => {
+            audio.play().then(() => setPlayingUI(true)).catch(() => {});
+            document.removeEventListener('click', resume);
+            document.removeEventListener('touchstart', resume);
+          };
+          document.addEventListener('click', resume, { once: true });
+          document.addEventListener('touchstart', resume, { once: true });
+        });
+    }
+  }
+
+  tryPlay();
+
+  toggle.addEventListener('click', () => {
+    if (audio.paused) {
+      audio.play().then(() => setPlayingUI(true)).catch(() => {});
+    } else {
+      audio.pause();
+      setPlayingUI(false);
+    }
+  });
+}
