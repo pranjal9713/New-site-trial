@@ -1,1 +1,324 @@
+/* =========================
+   Romantic Luxe Landing Page
+   - Mobile-first responsive
+   - Customizable via :root variables
+   - Uses backdrop-filter (glassmorphism), CSS + canvas animations
+   ========================= */
 
+/* ==============
+   Theme variables (customize here)
+   ============== */
+:root{
+  /* palette */
+  --pink-1: #ffd6e0;   /* soft pastel pink */
+  --pink-2: #ffb6c1;   /* neon pink accent */
+  --peach:  #ffe6d6;   /* light peach */
+  --white:  #ffffff;
+  --glass-bg: rgba(255,255,255,0.08);
+  --glass-border: rgba(255,255,255,0.16);
+  --card-radius: 34px;
+  --card-padding: 28px;
+  --shadow-1: 0 10px 30px rgba(0,0,0,0.25);
+  --glow-pink: 0 10px 40px rgba(255,120,170,0.18);
+  --accent: linear-gradient(135deg,var(--pink-2),#ff8aa5 60%,#ffb4c9 100%);
+  --text-strong: rgba(10,10,12,0.95);
+  --muted: rgba(10,10,12,0.55);
+  --max-width: 880px;
+}
+
+/* Mobile-first base resets */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  color:var(--text-strong);
+  background: var(--pink-1);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow:hidden; /* keep full-screen experience */
+}
+
+/* Intro overlay: cinematic fade+film grain (subtle) */
+#intro-overlay{
+  position:fixed; inset:0; z-index:60;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.08));
+  opacity:1;
+  transition:opacity 1.2s cubic-bezier(.2,.9,.2,1);
+  pointer-events:none;
+  backdrop-filter: blur(0px);
+}
+
+/* When loaded, remove overlay */
+body.loaded #intro-overlay{ opacity:0; pointer-events:none; }
+
+/* Animated gradient background panel */
+#gradient-bg{
+  position:fixed; inset:0; z-index:0;
+  background: radial-gradient(1200px 600px at 10% 20%, rgba(255,220,228,0.9), transparent 12%),
+              radial-gradient(1000px 500px at 90% 80%, rgba(255,238,230,0.82), transparent 14%),
+              linear-gradient(120deg, #fff0f6, #fff8f4 40%, #fff2ec 100%);
+  will-change: transform, opacity;
+  animation: bgShift 20s linear infinite;
+  opacity:0;
+  transition: opacity 1.2s ease;
+}
+
+/* Fade background in as part of cinematic intro */
+body.loaded #gradient-bg{ opacity:1; }
+
+/* Slow drifting of gradient (very subtle) */
+@keyframes bgShift{
+  0%{ transform: translate3d(0,0,0) scale(1) rotate(0deg); }
+  50%{ transform: translate3d(-6px,-8px,0) scale(1.01) rotate(.2deg); }
+  100%{ transform: translate3d(0,0,0) scale(1) rotate(0deg); }
+}
+
+/* Canvas for sparkles/bokeh (on top of gradient) */
+#bg-canvas{
+  position:fixed; inset:0; z-index:5;
+  display:block;
+  pointer-events:none;
+}
+
+/* Hearts container */
+#hearts{
+  position:fixed; inset:0; z-index:10;
+  pointer-events:none;
+  overflow:visible;
+}
+
+/* Card layout */
+#main{
+  position:relative; z-index:20;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:48px 20px;
+}
+
+/* Card wrapper to apply parallax transform comfortably */
+.card-wrap{
+  position:relative;
+  width:100%;
+  max-width:420px; /* mobile-first deliberate sizing */
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Soft glow behind card */
+.card-glow{
+  position:absolute;
+  inset:auto;
+  top:50%;
+  left:50%;
+  width:420px;
+  height:420px;
+  transform:translate(-50%,-55%);
+  background: radial-gradient(closest-side, rgba(255,120,170,0.12), rgba(255,190,190,0.05));
+  filter: blur(40px);
+  opacity:0;
+  transition:opacity 1s ease;
+  pointer-events:none;
+  border-radius: 50%;
+  z-index:14;
+  will-change:opacity, transform;
+}
+body.loaded .card-glow{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+
+/* Glass card */
+.glass-card{
+  position:relative;
+  width:100%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  box-shadow: var(--shadow-1), var(--glow-pink);
+  z-index:15;
+  transform-origin:center;
+  opacity:0;
+  transform: scale(.82) translateY(8px);
+  transition: transform 900ms cubic-bezier(.2,.9,.2,1), opacity 900ms cubic-bezier(.2,.9,.2,1);
+  will-change: transform, opacity;
+}
+
+/* When loaded, card scales to 1 and fades in (cinematic) */
+body.loaded .glass-card{
+  opacity:1;
+  transform: scale(1) translateY(0);
+}
+
+/* Subtle floating animation on the card (looping) */
+@keyframes floatCard {
+  0%{ transform: translateY(0); }
+  50%{ transform: translateY(-6px); }
+  100%{ transform: translateY(0); }
+}
+.glass-card { animation: floatCard 8s ease-in-out infinite; }
+
+/* Hero title */
+.hero-title{
+  margin:0 0 10px 0;
+  font-weight:600;
+  line-height:1.02;
+  font-size: clamp(28px, 8vw, 44px);
+  text-align:center;
+  letter-spacing: -0.02em;
+  color: var(--text-strong);
+  display:block;
+}
+.hero-title .script{
+  display:block;
+  font-family: 'Great Vibes', serif;
+  font-weight:400;
+  font-size: clamp(28px, 10vw, 56px);
+  color: #ff3a7b; /* small override for script */
+  margin-bottom: 6px;
+  text-shadow: 0 6px 18px rgba(255,120,170,0.08);
+}
+.hero-title .sans{
+  display:block;
+  font-family: 'Poppins', sans-serif;
+  font-weight:600;
+  font-size: clamp(14px, 4vw, 18px);
+  color:var(--muted);
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+/* Subtitle */
+.subtitle{
+  margin: 6px 0 18px 0;
+  color:var(--muted);
+  font-size: 15px;
+  text-align:center;
+  line-height:1.5;
+}
+
+/* CTA button */
+.cta-wrap{ display:flex; justify-content:center; }
+.btn-glow{
+  --btn-h:56px;
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:var(--btn-h);
+  min-width:180px;
+  padding:0 22px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,122,170,0.18), rgba(255,200,200,0.08));
+  color:var(--white);
+  border: 1px solid rgba(255,255,255,0.12);
+  cursor:pointer;
+  font-weight:600;
+  letter-spacing:0.01em;
+  font-size:16px;
+  box-shadow: 0 6px 30px rgba(255,110,160,0.12), 0 2px 8px rgba(0,0,0,0.12);
+  overflow:hidden;
+  transition: transform 300ms cubic-bezier(.2,.9,.2,1), box-shadow 300ms ease, background 300ms ease;
+  will-change: transform, box-shadow;
+  outline: none;
+}
+
+/* Neon accent + hover glow */
+.btn-glow::before{
+  content:'';
+  position:absolute; inset:0;
+  background: linear-gradient(90deg, rgba(255,120,170,0.14), rgba(255,180,190,0.06));
+  filter: blur(10px);
+  z-index:0;
+}
+.btn-glow:hover{
+  transform: scale(1.03);
+  box-shadow: 0 14px 50px rgba(255,110,160,0.22), 0 4px 12px rgba(0,0,0,0.18);
+}
+
+/* Inner content above the pseudo background */
+.btn-glow > *{ position:relative; z-index:2; }
+
+/* ripple element */
+.btn-glow .ripple{
+  position:absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  background: radial-gradient(circle, rgba(255,255,255,0.28), rgba(255,255,255,0.06));
+  pointer-events:none;
+  z-index:1;
+  opacity:0.9;
+}
+
+/* subtle pulse glow animation on card & button */
+@keyframes pulseGlow {
+  0%{ box-shadow: 0 10px 30px rgba(255,120,170,0.08); }
+  50%{ box-shadow: 0 18px 60px rgba(255,120,170,0.12); }
+  100%{ box-shadow: 0 10px 30px rgba(255,120,170,0.08); }
+}
+.glass-card{ animation: floatCard 8s ease-in-out infinite, pulseGlow 6s ease-in-out infinite; }
+
+/* Footer */
+#site-footer{
+  position:fixed;
+  bottom:12px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:35;
+  color: rgba(10,10,10,0.35);
+  font-size:12px;
+  pointer-events:none;
+}
+
+/* Floating hearts — each heart element is absolutely positioned and animated by CSS class */
+.heart{
+  position:absolute;
+  width: 44px;
+  height: 40px;
+  transform: translate3d(0,0,0) scale(0.9);
+  pointer-events:none;
+  opacity:0;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 6px 14px rgba(255,120,170,0.08));
+}
+.heart svg{ width:100%; height:100%; display:block; }
+
+/* hearts appear with fade-in then float upward via translateY and gentle sway rotation */
+.heart.animate {
+  animation: heartRise linear forwards, heartFloat ease-in-out infinite;
+  opacity:1;
+}
+@keyframes heartRise {
+  0%{ opacity:0; transform: translate3d(0,20px,0) scale(0.85) rotate(-6deg); }
+  12%{ opacity:1; transform: translate3d(0,0,0) scale(1) rotate(0deg); }
+  100%{ opacity:0; transform: translate3d(0,-420px,0) scale(0.9) rotate(24deg); }
+}
+@keyframes heartFloat {
+  0%{ transform: translate3d(0,-10px,0) rotate(0deg); }
+  50%{ transform: translate3d(6px,2px,0) rotate(3deg); }
+  100%{ transform: translate3d(0,-10px,0) rotate(0deg); }
+}
+
+/* sparkle tiny elements (canvas does primary job) */
+/* prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:1ms !important; scroll-behavior:auto !important; }
+}
+
+/* Larger screens: center card scale and sizes */
+@media (min-width:720px){
+  .card-wrap{ max-width:680px; }
+  .card-glow{ width:620px; height:420px; }
+  .glass-card{ padding:44px; border-radius:44px; }
+  .hero-title{ font-size: clamp(36px, 5vw, 56px); }
+  .heart{ width:58px; height:54px; }
+}
+
+/* Utility: visually-hidden for accessibility if needed */
+.visually-hidden { position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
+
+/* Small note: keep body overflow hidden; for real sites consider safe area insets for iOS */
