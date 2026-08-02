@@ -1,1 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Romantic · Luxe</title>
 
+  <!-- Google Fonts: Poppins for UI + Great Vibes for accent heading -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Theme & meta -->
+  <meta name="description" content="Premium romantic landing page — glassmorphism, floating hearts, sparkles, cinematic intro.">
+</head>
+<body class="preload">
+
+  <!-- Cinematic intro overlay (fades out) -->
+  <div id="intro-overlay" aria-hidden="true"></div>
+
+  <!-- Animated gradient background layer (uses CSS) -->
+  <div id="gradient-bg" aria-hidden="true"></div>
+
+  <!-- Canvas sits above gradient for particles, sparkles, soft blobs, bokeh -->
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+  <!-- Floating hearts container (DOM hearts for crisp shapes and CSS GPU animations) -->
+  <div id="hearts"></div>
+
+  <!-- Centered content area -->
+  <main id="main">
+    <div class="card-wrap">
+      <!-- soft glow behind card -->
+      <div class="card-glow" aria-hidden="true"></div>
+
+      <section class="glass-card" role="region" aria-label="Romantic introduction card">
+        <h1 class="hero-title"><span class="script">Beloved</span><br><span class="sans">A night made for two</span></h1>
+        <p class="subtitle">An intimate evening of whispered promises and soft lights. Let your story unfold in luxurious warmth.</p>
+
+        <div class="cta-wrap">
+          <button id="cta" class="btn-glow" aria-label="Begin your evening">Begin the Evening</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Minimal footer for attribution / optional small copy -->
+  <footer id="site-footer" aria-hidden="true">
+    <small>Crafted with care · Romantic · 2026</small>
+  </footer>
+
+  <!-- Main script -->
+  <script src="script.js"></script>
+</body>
+</html>
