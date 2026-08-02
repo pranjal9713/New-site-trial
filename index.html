@@ -1,56 +1,270 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Romantic · Luxe</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Forever & Always — A Love Story</title>
+<meta name="description" content="A premium interactive romantic experience.">
 
-  <!-- Google Fonts: Poppins for UI + Great Vibes for accent heading -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+<!-- Google Fonts: Poppins for body/UI, Great Vibes for romantic script display -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 
-  <!-- Main stylesheet -->
-  <link rel="stylesheet" href="style.css">
-
-  <!-- Theme & meta -->
-  <meta name="description" content="Premium romantic landing page — glassmorphism, floating hearts, sparkles, cinematic intro.">
+<link rel="stylesheet" href="style.css">
 </head>
-<body class="preload">
+<body>
 
-  <!-- Cinematic intro overlay (fades out) -->
-  <div id="intro-overlay" aria-hidden="true"></div>
+<!-- ============================================= -->
+<!-- LOADING SCREEN                                 -->
+<!-- ============================================= -->
+<div id="loader" class="loader">
+  <div class="loader-inner">
+    <svg class="loader-heart" viewBox="0 0 100 90" width="70" height="63">
+      <path d="M50 85 C20 60 0 40 0 20 C0 5 12 -2 25 3 C35 7 45 15 50 25 C55 15 65 7 75 3 C88 -2 100 5 100 20 C100 40 80 60 50 85 Z"/>
+    </svg>
+    <p class="loader-text">preparing something beautiful<span class="loader-dots"><span>.</span><span>.</span><span>.</span></span></p>
+    <div class="loader-bar"><div class="loader-bar-fill" id="loaderBarFill"></div></div>
+  </div>
+</div>
 
-  <!-- Animated gradient background layer (uses CSS) -->
-  <div id="gradient-bg" aria-hidden="true"></div>
+<!-- Cursor glow (desktop only, disabled on touch) -->
+<div class="cursor-glow" id="cursorGlow"></div>
 
-  <!-- Canvas sits above gradient for particles, sparkles, soft blobs, bokeh -->
-  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+<!-- Ambient animated background layers, shared across the whole page -->
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-gradient"></div>
+  <div class="bg-blob blob-a"></div>
+  <div class="bg-blob blob-b"></div>
+  <div class="bg-blob blob-c"></div>
+  <canvas id="particleCanvas"></canvas>
+  <div id="heartField" class="heart-field"></div>
+</div>
 
-  <!-- Floating hearts container (DOM hearts for crisp shapes and CSS GPU animations) -->
-  <div id="hearts"></div>
+<!-- Scroll progress indicator -->
+<div class="scroll-progress" aria-hidden="true"><div id="scrollProgressFill" class="scroll-progress-fill"></div></div>
 
-  <!-- Centered content area -->
-  <main id="main">
-    <div class="card-wrap">
-      <!-- soft glow behind card -->
-      <div class="card-glow" aria-hidden="true"></div>
+<!-- Side dot navigation -->
+<nav class="dot-nav" id="dotNav" aria-label="Section navigation">
+  <button data-target="hero" class="dot active" aria-label="Opening"></button>
+  <button data-target="story" class="dot" aria-label="Our Story"></button>
+  <button data-target="timeline" class="dot" aria-label="Timeline"></button>
+  <button data-target="gallery" class="dot" aria-label="Gallery"></button>
+  <button data-target="letter" class="dot" aria-label="Love Letter"></button>
+  <button data-target="quote" class="dot" aria-label="Quote"></button>
+  <button data-target="surprise" class="dot" aria-label="Surprise"></button>
+  <button data-target="ending" class="dot" aria-label="Forever"></button>
+</nav>
 
-      <section class="glass-card" role="region" aria-label="Romantic introduction card">
-        <h1 class="hero-title"><span class="script">Beloved</span><br><span class="sans">A night made for two</span></h1>
-        <p class="subtitle">An intimate evening of whispered promises and soft lights. Let your story unfold in luxurious warmth.</p>
+<main id="main">
 
-        <div class="cta-wrap">
-          <button id="cta" class="btn-glow" aria-label="Begin your evening">Begin the Evening</button>
-        </div>
-      </section>
+  <!-- ============================================= -->
+  <!-- 1. HERO / CINEMATIC INTRO                      -->
+  <!-- ============================================= -->
+  <section id="hero" class="section hero-section" data-section>
+    <div class="hero-glow"></div>
+    <div class="glass-card hero-card" id="heroCard">
+      <span class="eyebrow">a story written in two hearts</span>
+      <h1 class="script-heading hero-title">
+        <span class="reveal-line" style="--d:0">Forever</span>
+        <span class="reveal-line amp" style="--d:1">&amp;</span>
+        <span class="reveal-line" style="--d:2">Always</span>
+      </h1>
+      <p class="hero-subtitle reveal-fade" style="--d:3">Every love has a beginning worth remembering.<br>This one begins here, with you.</p>
+      <button class="glow-btn reveal-fade" style="--d:4" id="beginBtn">
+        <span class="glow-btn-label">Begin Our Story</span>
+        <span class="glow-btn-shine"></span>
+      </button>
     </div>
-  </main>
+    <div class="scroll-cue reveal-fade" style="--d:5" aria-hidden="true">
+      <span></span>
+      <p>scroll to unfold</p>
+    </div>
+  </section>
 
-  <!-- Minimal footer for attribution / optional small copy -->
-  <footer id="site-footer" aria-hidden="true">
-    <small>Crafted with care · Romantic · 2026</small>
-  </footer>
+  <!-- ============================================= -->
+  <!-- 2. OUR STORY — poetic intro                    -->
+  <!-- ============================================= -->
+  <section id="story" class="section story-section" data-section>
+    <div class="section-inner">
+      <span class="eyebrow center reveal-on-scroll">chapter one</span>
+      <h2 class="script-heading section-title reveal-on-scroll">Where It All Began</h2>
+      <div class="story-lines">
+        <p class="story-line reveal-on-scroll">It started as the quietest kind of moment —</p>
+        <p class="story-line reveal-on-scroll">a glance held a second too long,</p>
+        <p class="story-line reveal-on-scroll">a laugh that felt like home.</p>
+        <p class="story-line story-line-accent reveal-on-scroll">And somehow, without asking permission,<br>you became my favorite person to love.</p>
+      </div>
+    </div>
+  </section>
 
-  <!-- Main script -->
-  <script src="script.js"></script>
+  <!-- ============================================= -->
+  <!-- 3. TIMELINE — chronological moments            -->
+  <!-- ============================================= -->
+  <section id="timeline" class="section timeline-section" data-section>
+    <div class="section-inner">
+      <span class="eyebrow center reveal-on-scroll">chapter two</span>
+      <h2 class="script-heading section-title reveal-on-scroll">Moments That Made Us</h2>
+      <p class="section-sub reveal-on-scroll">A timeline only makes sense here — because every one of these truly happened in order.</p>
+
+      <div class="timeline" id="timelineTrack">
+        <div class="timeline-line" aria-hidden="true"><div class="timeline-line-fill" id="timelineFill"></div></div>
+
+        <div class="timeline-item reveal-on-scroll" data-side="left">
+          <div class="timeline-marker">01</div>
+          <div class="glass-card timeline-card">
+            <h3>The First Hello</h3>
+            <p>A simple conversation that somehow never really ended — it just kept turning into more.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item reveal-on-scroll" data-side="right">
+          <div class="timeline-marker">02</div>
+          <div class="glass-card timeline-card">
+            <h3>The First Laugh</h3>
+            <p>The moment I knew — the sound of your laughter became the standard for happiness.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item reveal-on-scroll" data-side="left">
+          <div class="timeline-marker">03</div>
+          <div class="glass-card timeline-card">
+            <h3>The First "Us"</h3>
+            <p>Two separate stories quietly agreeing to become one, one ordinary evening.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item reveal-on-scroll" data-side="right">
+          <div class="timeline-marker">04</div>
+          <div class="glass-card timeline-card">
+            <h3>Every Day Since</h3>
+            <p>Still choosing this. Still choosing you. Every single day, on purpose.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================= -->
+  <!-- 4. GALLERY — polaroid keepsakes                -->
+  <!-- ============================================= -->
+  <section id="gallery" class="section gallery-section" data-section>
+    <div class="section-inner">
+      <span class="eyebrow center reveal-on-scroll">chapter three</span>
+      <h2 class="script-heading section-title reveal-on-scroll">Kept Like Treasure</h2>
+      <p class="section-sub reveal-on-scroll">Little frames, holding big feelings.</p>
+
+      <div class="polaroid-grid">
+        <div class="polaroid reveal-on-scroll" style="--r:-6deg;">
+          <div class="polaroid-art art-1"><span>♥</span></div>
+          <p class="polaroid-caption">that first sunset</p>
+        </div>
+        <div class="polaroid reveal-on-scroll" style="--r:4deg;">
+          <div class="polaroid-art art-2"><span>♥</span></div>
+          <p class="polaroid-caption">rainy afternoons</p>
+        </div>
+        <div class="polaroid reveal-on-scroll" style="--r:-3deg;">
+          <div class="polaroid-art art-3"><span>♥</span></div>
+          <p class="polaroid-caption">the quiet drives</p>
+        </div>
+        <div class="polaroid reveal-on-scroll" style="--r:7deg;">
+          <div class="polaroid-art art-4"><span>♥</span></div>
+          <p class="polaroid-caption">dancing, badly</p>
+        </div>
+        <div class="polaroid reveal-on-scroll" style="--r:-5deg;">
+          <div class="polaroid-art art-5"><span>♥</span></div>
+          <p class="polaroid-caption">late night talks</p>
+        </div>
+        <div class="polaroid reveal-on-scroll" style="--r:2deg;">
+          <div class="polaroid-art art-6"><span>♥</span></div>
+          <p class="polaroid-caption">tomorrow, and tomorrow</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================= -->
+  <!-- 5. LOVE LETTER — unfolding letter card         -->
+  <!-- ============================================= -->
+  <section id="letter" class="section letter-section" data-section>
+    <div class="section-inner">
+      <span class="eyebrow center reveal-on-scroll">chapter four</span>
+      <h2 class="script-heading section-title reveal-on-scroll">A Letter, For You</h2>
+
+      <div class="letter-wrap reveal-on-scroll">
+        <div class="glass-card letter-card" id="letterCard">
+          <p class="letter-greeting">My Dearest,</p>
+          <p class="letter-body">
+            If you're reading this, know that somewhere in the middle of an ordinary life,
+            you became the extraordinary part. You are the calm in my noise, the warmth in my winters,
+            and the reason my favorite stories all start the same way — with you.
+          </p>
+          <p class="letter-body">
+            I don't need grand gestures to know this is real. I just need your hand,
+            your laugh across a quiet room, and every unremarkable Tuesday spent beside you.
+          </p>
+          <p class="letter-signoff">Yours, always &amp; completely.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================= -->
+  <!-- 6. QUOTE — parallax statement                  -->
+  <!-- ============================================= -->
+  <section id="quote" class="section quote-section" data-section>
+    <div class="quote-glow"></div>
+    <div class="section-inner">
+      <p class="quote-mark reveal-on-scroll" aria-hidden="true">&ldquo;</p>
+      <h2 class="quote-text script-heading reveal-on-scroll">
+        In a sea of people, my eyes will always search for you.
+      </h2>
+      <p class="quote-attr reveal-on-scroll">— every version of me, in every version of this story</p>
+    </div>
+  </section>
+
+  <!-- ============================================= -->
+  <!-- 7. SURPRISE — interactive reveal                -->
+  <!-- ============================================= -->
+  <section id="surprise" class="section surprise-section" data-section>
+    <div class="section-inner">
+      <span class="eyebrow center reveal-on-scroll">chapter five</span>
+      <h2 class="script-heading section-title reveal-on-scroll">One More Thing…</h2>
+      <p class="section-sub reveal-on-scroll">There's something sealed just for you. Go ahead — open it.</p>
+
+      <div class="surprise-stage reveal-on-scroll">
+        <button class="wax-seal" id="waxSeal" aria-label="Open the surprise">
+          <span class="wax-seal-heart">♥</span>
+        </button>
+
+        <div class="surprise-reveal glass-card" id="surpriseReveal">
+          <h3 class="script-heading">I Choose You</h3>
+          <p>Today, tomorrow, and in every tomorrow after that — again and again, without hesitation, I choose you.</p>
+          <div class="surprise-hearts" id="surpriseHearts" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================= -->
+  <!-- 8. ENDING — closing & forever                   -->
+  <!-- ============================================= -->
+  <section id="ending" class="section ending-section" data-section>
+    <div class="hero-glow ending-glow"></div>
+    <div class="glass-card ending-card reveal-on-scroll">
+      <span class="eyebrow center">the story continues</span>
+      <h2 class="script-heading ending-title">To Be Continued…</h2>
+      <p class="ending-sub">Some stories end at "The End."<br>Ours doesn't — it just keeps going, with you.</p>
+      <button class="glow-btn" id="restartBtn">
+        <span class="glow-btn-label">Relive Our Story</span>
+        <span class="glow-btn-shine"></span>
+      </button>
+      <p class="ending-footer">made with a full heart, for you &nbsp;♥</p>
+    </div>
+  </section>
+
+</main>
+
+<script src="script.js"></script>
 </body>
 </html>
