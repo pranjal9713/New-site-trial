@@ -31,6 +31,15 @@
 <!-- Cursor glow (desktop only, disabled on touch) -->
 <div class="cursor-glow" id="cursorGlow"></div>
 
+<!-- Background music -->
+<audio id="bgMusic" src="audio/our-song.mp3" loop preload="auto"></audio>
+
+<button id="musicToggle" class="music-toggle" aria-label="Toggle music">
+  <span class="music-icon playing">
+    <span></span><span></span><span></span>
+  </span>
+</button>  
+  
 <!-- Ambient animated background layers, shared across the whole page -->
 <div class="bg-scene" aria-hidden="true">
   <div class="bg-gradient"></div>
