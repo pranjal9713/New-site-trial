@@ -468,3 +468,9 @@ function initMusic() {
   });
 }
 
+setTimeout(() => {
+  loader.classList.add('hidden');
+  document.body.style.overflow = '';
+  playHeroIntro();
+  initMusic();
+}, 260);
