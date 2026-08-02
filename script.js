@@ -1,7 +1,7 @@
 /* =====================================================================
-   FOREVER & ALWAYS — Premium Romantic Experience
+   CHAKULI — Premium Romantic Experience
    script.js — Pure vanilla JS, no dependencies.
-   Sections: Loader / Particles / Floating Hearts / Cursor Glow /
+   Sections: Loader / Music / Particles / Floating Hearts / Cursor Glow /
    Scroll Reveal / Dot Nav / Parallax / Buttons & Ripple / Timeline /
    Surprise Reveal / Misc
    ===================================================================== */
@@ -20,7 +20,6 @@
     let progress = 0;
 
     const tick = () => {
-      // Ease toward 100, slowing near the end for a premium feel
       progress += (100 - progress) * 0.09 + 0.6;
       if (progress > 99.4) progress = 100;
       fill.style.width = progress + '%';
@@ -31,6 +30,7 @@
           loader.classList.add('hidden');
           document.body.style.overflow = '';
           playHeroIntro();
+          initMusic();
         }, 260);
       }
     };
@@ -39,9 +39,54 @@
   }
 
   function playHeroIntro() {
-    // Hero card content already animates via CSS .reveal-line/.reveal-fade
-    // Trigger a soft heart burst behind the card for a cinematic welcome
     spawnBurst(window.innerWidth / 2, window.innerHeight / 2, 10);
+  }
+
+  /* -------------------------------------------------------------------
+     BACKGROUND MUSIC — attempts autoplay, falls back to first interaction
+     ------------------------------------------------------------------- */
+  function initMusic() {
+    const audio = document.getElementById('bgMusic');
+    const toggle = document.getElementById('musicToggle');
+    if (!audio || !toggle) return;
+    const icon = toggle.querySelector('.music-icon');
+
+    audio.volume = 0.55;
+
+    function setPlayingUI(isPlaying) {
+      icon.classList.toggle('playing', isPlaying);
+      icon.classList.toggle('paused', !isPlaying);
+      toggle.setAttribute('aria-label', isPlaying ? 'Pause music' : 'Play music');
+    }
+
+    function tryPlay() {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => setPlayingUI(true))
+          .catch(() => {
+            setPlayingUI(false);
+            const resume = () => {
+              audio.play().then(() => setPlayingUI(true)).catch(() => {});
+              document.removeEventListener('click', resume);
+              document.removeEventListener('touchstart', resume);
+            };
+            document.addEventListener('click', resume, { once: true });
+            document.addEventListener('touchstart', resume, { once: true });
+          });
+      }
+    }
+
+    tryPlay();
+
+    toggle.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play().then(() => setPlayingUI(true)).catch(() => {});
+      } else {
+        audio.pause();
+        setPlayingUI(false);
+      }
+    });
   }
 
   /* -------------------------------------------------------------------
@@ -130,7 +175,6 @@
   function initFloatingHearts() {
     const field = document.getElementById('heartField');
     const count = window.innerWidth < 700 ? 10 : 18;
-
     for (let i = 0; i < count; i++) {
       spawnHeart(field, true);
     }
@@ -254,7 +298,6 @@
       const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
       fill.style.width = pct + '%';
 
-      // Determine active section (closest to viewport center)
       let activeIndex = 0;
       let minDist = Infinity;
       sections.forEach((sec, i) => {
@@ -418,59 +461,3 @@
     }
   });
 })();
-
-
-/* -------------------------------------------------------------------
-   BACKGROUND MUSIC — attempts autoplay, falls back to first interaction
-   ------------------------------------------------------------------- */
-function initMusic() {
-  const audio = document.getElementById('bgMusic');
-  const toggle = document.getElementById('musicToggle');
-  const icon = toggle.querySelector('.music-icon');
-  if (!audio) return;
-
-  audio.volume = 0.55;
-
-  function setPlayingUI(isPlaying) {
-    icon.classList.toggle('playing', isPlaying);
-    icon.classList.toggle('paused', !isPlaying);
-    toggle.setAttribute('aria-label', isPlaying ? 'Pause music' : 'Play music');
-  }
-
-  function tryPlay() {
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise
-        .then(() => setPlayingUI(true))
-        .catch(() => {
-          // Autoplay blocked — start on the first user interaction instead
-          setPlayingUI(false);
-          const resume = () => {
-            audio.play().then(() => setPlayingUI(true)).catch(() => {});
-            document.removeEventListener('click', resume);
-            document.removeEventListener('touchstart', resume);
-          };
-          document.addEventListener('click', resume, { once: true });
-          document.addEventListener('touchstart', resume, { once: true });
-        });
-    }
-  }
-
-  tryPlay();
-
-  toggle.addEventListener('click', () => {
-    if (audio.paused) {
-      audio.play().then(() => setPlayingUI(true)).catch(() => {});
-    } else {
-      audio.pause();
-      setPlayingUI(false);
-    }
-  });
-}
-
-setTimeout(() => {
-  loader.classList.add('hidden');
-  document.body.style.overflow = '';
-  playHeroIntro();
-  initMusic();
-}, 260);
