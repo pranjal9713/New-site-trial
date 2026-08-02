@@ -1,421 +1,420 @@
-/* =========================
-   script.js - Vanilla JS
-   - Orchestrates cinematic intro
-   - Manages hearts creation & lifecycle
-   - Canvas particle system for sparkles, bokeh, soft blobs
-   - Button ripple effect
-   - Mouse/touch parallax (throttled)
-   - Optimized for high-frame-rate via requestAnimationFrame
-   ========================= */
+/* =====================================================================
+   FOREVER & ALWAYS — Premium Romantic Experience
+   script.js — Pure vanilla JS, no dependencies.
+   Sections: Loader / Particles / Floating Hearts / Cursor Glow /
+   Scroll Reveal / Dot Nav / Parallax / Buttons & Ripple / Timeline /
+   Surprise Reveal / Misc
+   ===================================================================== */
+(() => {
+  'use strict';
 
-/* -------------
-   Configuration (easy to tweak)
-   ------------- */
-const CONFIG = {
-  heartCount: 10,           // max simultaneous hearts during intro; keep low for perf
-  heartSpawnInterval: 420,  // ms between heart spawns during initial reveal
-  particleCount: 60,        // sparkles + bokeh combined
-  sparkleMaxSize: 3.6,      // px
-  canvasOpacity: 0.95,
-  parallaxStrength: 0.03,   // small value for luxurious subtlety
-};
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isTouch = window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
-/* DOM references */
-const body = document.body;
-const heartsContainer = document.getElementById('hearts');
-const canvas = document.getElementById('bg-canvas');
-const ctx = canvas.getContext('2d', { alpha: true });
-const cardWrap = document.querySelector('.card-wrap');
-const card = document.querySelector('.glass-card');
-const cardGlow = document.querySelector('.card-glow');
-const gradientBg = document.getElementById('gradient-bg');
-const introOverlay = document.getElementById('intro-overlay');
-const cta = document.getElementById('cta');
+  /* -------------------------------------------------------------------
+     LOADER — simulate a graceful load, then reveal the site
+     ------------------------------------------------------------------- */
+  function initLoader() {
+    const loader = document.getElementById('loader');
+    const fill = document.getElementById('loaderBarFill');
+    let progress = 0;
 
-/* Reduce motion detection */
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-/* Resize canvas to fit devicePixelRatio */
-function resizeCanvas(){
-  const dpr = Math.max(1, window.devicePixelRatio || 1);
-  canvas.width = Math.round(window.innerWidth * dpr);
-  canvas.height = Math.round(window.innerHeight * dpr);
-  canvas.style.width = window.innerWidth + 'px';
-  canvas.style.height = window.innerHeight + 'px';
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-}
-window.addEventListener('resize', () => {
-  resizeCanvas();
-  // reinitialize particle positions so they remain proportional
-  initParticles();
-});
-
-/* ================
-   Particle System (canvas)
-   - draws sparkles, soft bokeh blobs, and drifting blobs
-   ================ */
-let particles = [];
-
-function random(min, max){ return Math.random() * (max - min) + min; }
-
-function initParticles(){
-  particles = [];
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  const total = Math.max(20, Math.min(CONFIG.particleCount, Math.floor((w*h)/70000)));
-  for(let i=0;i<total;i++){
-    particles.push(createParticle(w,h));
-  }
-}
-function createParticle(w,h){
-  const typeRand = Math.random();
-  if(typeRand < 0.6){
-    // sparkle
-    return {
-      kind: 'spark',
-      x: random(0,w),
-      y: random(0,h),
-      size: random(0.8, CONFIG.sparkleMaxSize),
-      alpha: random(0.05, 0.6),
-      vx: random(-0.05, 0.05),
-      vy: random(-0.08, -0.25),
-      life: random(200, 900),
-      t: 0,
-      sway: random(0.2, 1.4),
+    const tick = () => {
+      // Ease toward 100, slowing near the end for a premium feel
+      progress += (100 - progress) * 0.09 + 0.6;
+      if (progress > 99.4) progress = 100;
+      fill.style.width = progress + '%';
+      if (progress < 100) {
+        requestAnimationFrame(tick);
+      } else {
+        setTimeout(() => {
+          loader.classList.add('hidden');
+          document.body.style.overflow = '';
+          playHeroIntro();
+        }, 260);
+      }
     };
-  } else {
-    // bokeh / soft blob
-    return {
-      kind: 'bokeh',
-      x: random(0,w),
-      y: random(0,h),
-      size: random(40, 220),
-      alpha: random(0.02, 0.12),
-      vx: random(-0.02, 0.02),
-      vy: random(-0.01, 0.02),
-      life: Infinity,
-      t: random(0,1000),
-      hue: random(300, 350), // pinky-peach hue
-    };
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(tick);
   }
-}
 
-let lastFrame = performance.now();
-function drawFrame(now){
-  const dt = now - lastFrame;
-  lastFrame = now;
-  ctx.clearRect(0,0,canvas.width, canvas.height);
-  const w = canvas.width / (window.devicePixelRatio || 1);
-  const h = canvas.height / (window.devicePixelRatio || 1);
+  function playHeroIntro() {
+    // Hero card content already animates via CSS .reveal-line/.reveal-fade
+    // Trigger a soft heart burst behind the card for a cinematic welcome
+    spawnBurst(window.innerWidth / 2, window.innerHeight / 2, 10);
+  }
 
-  // gentle global tint for warmth (very subtle)
-  ctx.save();
-  ctx.globalAlpha = 0.9 * CONFIG.canvasOpacity;
-  // draw particles
-  particles.forEach(p => {
-    if(p.kind === 'spark'){
-      p.t += dt;
-      p.x += p.vx * dt * 0.06;
-      p.y += p.vy * dt * 0.06;
-      // slight horizontal sway
-      const sway = Math.sin((p.t+p.sway*1000)/1200) * (p.size*0.8);
-      // reduce alpha as it drifts up
-      const alpha = Math.max(0, p.alpha - (p.t / p.life) * 0.9);
-      ctx.beginPath();
-      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
-      ctx.arc(p.x + sway, p.y, p.size, 0, Math.PI*2);
-      ctx.fill();
-      // twinkle: small cross
-      if(alpha > 0.18){
+  /* -------------------------------------------------------------------
+     PARTICLE CANVAS — soft glowing bokeh + sparkles, 60fps, capped count
+     ------------------------------------------------------------------- */
+  function initParticles() {
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let w, h, particles;
+    const COUNT = window.innerWidth < 700 ? 26 : 46;
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', debounce(resize, 200));
+
+    function makeParticle() {
+      const isSparkle = Math.random() > 0.6;
+      return {
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: isSparkle ? Math.random() * 1.6 + 0.6 : Math.random() * 4 + 2,
+        baseAlpha: Math.random() * 0.35 + 0.15,
+        alpha: 0,
+        speed: Math.random() * 0.25 + 0.05,
+        drift: (Math.random() - 0.5) * 0.3,
+        twinkleSpeed: Math.random() * 0.02 + 0.005,
+        twinklePhase: Math.random() * Math.PI * 2,
+        sparkle: isSparkle,
+        hue: Math.random() > 0.5 ? '255,157,184' : '216,160,90'
+      };
+    }
+    particles = Array.from({ length: COUNT }, makeParticle);
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      for (const p of particles) {
+        p.twinklePhase += p.twinkleSpeed;
+        p.alpha = p.baseAlpha * (0.5 + 0.5 * Math.sin(p.twinklePhase));
+        p.y -= p.speed;
+        p.x += p.drift;
+        if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
+        if (p.x < -10) p.x = w + 10;
+        if (p.x > w + 10) p.x = -10;
+
         ctx.beginPath();
-        ctx.strokeStyle = `rgba(255,235,245,${alpha*0.6})`;
-        ctx.lineWidth = 0.6;
-        ctx.moveTo(p.x+sway-2, p.y);
-        ctx.lineTo(p.x+sway+2, p.y);
-        ctx.moveTo(p.x+sway, p.y-2);
-        ctx.lineTo(p.x+sway, p.y+2);
-        ctx.stroke();
+        if (p.sparkle) {
+          drawSparkle(ctx, p.x, p.y, p.r * 3, p.alpha);
+        } else {
+          const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 4);
+          grad.addColorStop(0, `rgba(${p.hue},${p.alpha})`);
+          grad.addColorStop(1, `rgba(${p.hue},0)`);
+          ctx.fillStyle = grad;
+          ctx.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
-      if(p.t > p.life){
-        // recycle to bottom
-        p.x = random(0,w);
-        p.y = h + random(10,120);
-        p.t = 0;
-        p.life = random(200,900);
-        p.alpha = random(0.05,0.6);
-      }
-    } else if(p.kind === 'bokeh'){
-      // soft radial gradient blob
-      p.t += dt * 0.0002;
-      p.x += p.vx * dt * 0.02;
-      p.y += p.vy * dt * 0.02;
-      // loop around edges
-      if(p.x < -p.size) p.x = w + p.size;
-      if(p.x > w + p.size) p.x = -p.size;
-      if(p.y < -p.size) p.y = h + p.size;
-      if(p.y > h + p.size) p.y = -p.size;
-      const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
-      const colorA = `rgba(255, 172, 196, ${p.alpha})`;
-      const colorB = `rgba(255, 230, 218, 0)`;
-      grd.addColorStop(0, colorA);
-      grd.addColorStop(1, colorB);
-      ctx.fillStyle = grd;
+      if (!prefersReducedMotion) requestAnimationFrame(draw);
+    }
+
+    function drawSparkle(ctx, x, y, size, alpha) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = '#fff8f4';
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+      ctx.moveTo(0, -size);
+      ctx.quadraticCurveTo(size * 0.15, -size * 0.15, size, 0);
+      ctx.quadraticCurveTo(size * 0.15, size * 0.15, 0, size);
+      ctx.quadraticCurveTo(-size * 0.15, size * 0.15, -size, 0);
+      ctx.quadraticCurveTo(-size * 0.15, -size * 0.15, 0, -size);
       ctx.fill();
+      ctx.restore();
     }
-  });
 
-  ctx.restore();
-
-  // request next frame
-  animFrame = requestAnimationFrame(drawFrame);
-}
-let animFrame;
-
-/* ================
-   Hearts (DOM) — creates hearts gradually (intro), then occasional floating
-   ================ */
-
-/* Heart SVG markup (keeps crisp vector) */
-const heartSVG = (color='linear-gradient(180deg,#ff89b5,#ff6a98)') => {
-  return `
-  <svg viewBox="0 0 32 29" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <defs>
-      <linearGradient id="g" x1="0" x2="1">
-        <stop offset="0" stop-color="#ffb6c1"/>
-        <stop offset="1" stop-color="#ff6a98"/>
-      </linearGradient>
-    </defs>
-    <path d="M23.6 2c-2.4 0-4.2 1.6-5.1 3.0-.9-1.4-2.7-3-5.1-3C7.5 2 4 6 4 10.9 4 16.7 8.1 20 16 26 23.9 20 28 16.7 28 10.9 28 6 24.5 2 23.6 2z"
-      fill="url(#g)" opacity="0.98" />
-  </svg>`;
-}
-
-/* create a heart element placed at (x, y) percent or px; we will animate it with CSS */
-function spawnHeart({left, bottom, size=42, duration=8000, delay=0} = {}){
-  const el = document.createElement('div');
-  el.className = 'heart';
-  el.style.left = (typeof left === 'number' ? left + 'px' : left);
-  el.style.bottom = (typeof bottom === 'number' ? bottom + 'px' : bottom);
-  el.style.width = size + 'px';
-  el.style.height = (size * 0.9) + 'px';
-  // random rotation and animation duration to avoid uniformity
-  const animDuration = duration + Math.round(Math.random()*4000 - 1600);
-  el.style.animationDuration = animDuration + 'ms, ' + (3 + Math.random()*5) + 's';
-  el.style.opacity = 0;
-  el.innerHTML = heartSVG();
-  heartsContainer.appendChild(el);
-
-  // trigger animation after slight delay
-  setTimeout(()=> el.classList.add('animate'), delay);
-
-  // remove element after animation completes
-  setTimeout(()=> {
-    // fade out gently
-    el.style.transition = 'opacity 900ms ease';
-    el.style.opacity = 0;
-    setTimeout(()=> { if(el && el.parentNode) el.parentNode.removeChild(el); }, 1000);
-  }, animDuration + 800);
-}
-
-/* spawn hearts across width with randomized sizes & timing */
-function startHeartIntro(){
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  let spawned = 0;
-  const max = Math.max(6, CONFIG.heartCount);
-  const interval = setInterval(()=>{
-    const left = Math.random() * (w * 0.9) + (w * 0.05);
-    const bottom = Math.random() * 40 + 10; // start near bottom
-    const size = Math.round(random(32, 68));
-    const dur = Math.round(random(7000, 12000));
-    spawnHeart({left, bottom, size, duration:dur});
-    spawned++;
-    if(spawned >= max) clearInterval(interval);
-  }, CONFIG.heartSpawnInterval);
-}
-
-/* occasionally spawn tiny hearts to keep the scene alive (but minimal for perf) */
-let keepHeartsInterval;
-function keepHeartsAlive(){
-  keepHeartsInterval = setInterval(()=>{
-    // small chance each tick
-    if(Math.random() > 0.5) return;
-    const w = window.innerWidth;
-    const left = Math.random() * (w * 0.92) + (w * 0.04);
-    spawnHeart({ left, bottom: random(8, 60), size: random(18, 44), duration: random(6000, 12000) });
-  }, 1200);
-}
-
-/* ================
-   Parallax — subtle card and background movement based on pointer
-   ================ */
-let parallax = {x:0,y:0};
-let parallaxTarget = {x:0,y:0};
-let rafId;
-function onPointerMove(e){
-  const ev = e.touches ? e.touches[0] : e;
-  const cx = window.innerWidth / 2;
-  const cy = window.innerHeight / 2;
-  const dx = (ev.clientX - cx) / cx; // -1 .. 1
-  const dy = (ev.clientY - cy) / cy;
-  parallaxTarget.x = dx;
-  parallaxTarget.y = dy;
-}
-function parallaxLoop(){
-  // lerp current toward target
-  parallax.x += (parallaxTarget.x - parallax.x) * 0.06;
-  parallax.y += (parallaxTarget.y - parallax.y) * 0.06;
-  const tx = parallax.x * 100 * CONFIG.parallaxStrength;
-  const ty = parallax.y * 40 * CONFIG.parallaxStrength;
-
-  // apply transforms: card (foreground) moves slightly opposite for depth
-  if(cardWrap){
-    cardWrap.style.transform = `translate3d(${tx}px, ${ty}px, 0)`;
-  }
-  // gradient background moves a bit with same vector for cohesion
-  if(gradientBg){
-    gradientBg.style.transform = `translate3d(${tx * -0.2}px, ${ty * -0.4}px, 0) scale(1.02)`;
-  }
-  // cardGlow subtle lag
-  if(cardGlow){
-    cardGlow.style.transform = `translate(-50%,-50%) translate3d(${tx * -0.6}px, ${ty * -0.8}px, 0) scale(1)`;
+    draw();
   }
 
-  rafId = requestAnimationFrame(parallaxLoop);
-}
+  /* -------------------------------------------------------------------
+     FLOATING HEARTS — DOM-based, CSS-driven upward drift
+     ------------------------------------------------------------------- */
+  const HEART_SVG = `<svg viewBox="0 0 100 90" xmlns="http://www.w3.org/2000/svg"><path d="M50 85 C20 60 0 40 0 20 C0 5 12 -2 25 3 C35 7 45 15 50 25 C55 15 65 7 75 3 C88 -2 100 5 100 20 C100 40 80 60 50 85 Z"/></svg>`;
 
-/* ================
-   Button ripple effect
-   ================ */
-function createRipple(e){
-  const btn = e.currentTarget;
-  const rect = btn.getBoundingClientRect();
-  const size = Math.max(rect.width, rect.height) * 1.2;
-  const ripple = document.createElement('span');
-  ripple.className = 'ripple';
-  ripple.style.width = ripple.style.height = size + 'px';
-  const x = e.clientX - rect.left - size / 2;
-  const y = e.clientY - rect.top - size / 2;
-  ripple.style.left = x + 'px';
-  ripple.style.top = y + 'px';
-  ripple.style.transition = 'transform 650ms cubic-bezier(.2,.9,.2,1), opacity 600ms ease';
-  ripple.style.transform = 'scale(0)';
-  ripple.style.opacity = '0.85';
-  btn.appendChild(ripple);
+  function initFloatingHearts() {
+    const field = document.getElementById('heartField');
+    const count = window.innerWidth < 700 ? 10 : 18;
 
-  // Force reflow then animate
-  requestAnimationFrame(()=> {
-    ripple.style.transform = 'scale(1)';
-    ripple.style.opacity = '0';
-  });
-
-  // cleanup
-  setTimeout(()=> {
-    if(ripple && ripple.parentNode) ripple.parentNode.removeChild(ripple);
-  }, 800);
-}
-
-/* CTA hover subtle micro-interaction: add small shimmer on hover (pure CSS handles most) */
-
-/* ================
-   Init & Intro orchestration
-   ================ */
-function start(){
-  // Prepare canvas and particles
-  resizeCanvas();
-  initParticles();
-  lastFrame = performance.now();
-  animFrame = requestAnimationFrame(drawFrame);
-
-  // start parallax loop if not reduced motion
-  if(!reduceMotion){
-    window.addEventListener('mousemove', onPointerMove, {passive:true});
-    window.addEventListener('touchmove', onPointerMove, {passive:true});
-    parallaxLoop();
+    for (let i = 0; i < count; i++) {
+      spawnHeart(field, true);
+    }
   }
 
-  // Cinematic intro sequence:
-  // 1. Fade gradient bg and canvas (CSS handles gradient fade via body.loaded).
-  // 2. Slowly spawn hearts.
-  // 3. Scale-in & fade-in card (CSS triggers with body.loaded).
-  // 4. Show soft glow behind card
-  // Use staggered timings to feel cinematic.
+  function spawnHeart(field, initial) {
+    const el = document.createElement('div');
+    el.className = 'floating-heart';
+    el.innerHTML = HEART_SVG;
 
-  // Slight delay to allow assets/fonts to load visually
-  setTimeout(()=> {
-    // Mark page loaded - triggers CSS transitions across elements
-    body.classList.add('loaded');
-    document.documentElement.classList.remove('preload');
+    const size = Math.random() * 18 + 10;
+    const duration = Math.random() * 10 + 12;
+    const delay = initial ? Math.random() * duration : 0;
+    const left = Math.random() * 100;
+    const drift = (Math.random() * 80 - 40) + 'px';
+    const rot = (Math.random() * 30 - 15) + 'deg';
+    const scale = (Math.random() * 0.6 + 0.6).toFixed(2);
+    const opacity = (Math.random() * 0.35 + 0.25).toFixed(2);
 
-    // Make overlay fade away after short time
-    setTimeout(()=> {
-      introOverlay.style.pointerEvents = 'none';
-      introOverlay.style.opacity = '0';
-    }, 600);
+    el.style.left = left + 'vw';
+    el.style.width = size + 'px';
+    el.style.height = size * 0.9 + 'px';
+    el.style.setProperty('--drift', drift);
+    el.style.setProperty('--rot', rot);
+    el.style.setProperty('--s', scale);
+    el.style.setProperty('--o', opacity);
+    el.style.animationDuration = duration + 's';
+    el.style.animationDelay = '-' + delay + 's';
 
-    // Spawn hearts gradually
-    startHeartIntro();
+    field.appendChild(el);
+  }
 
-    // after initial hearts, keep a low-level heart spawn
-    setTimeout(()=> {
-      keepHeartsAlive();
-    }, 2500);
+  /* -------------------------------------------------------------------
+     CURSOR GLOW — desktop only, follows pointer with slight lag
+     ------------------------------------------------------------------- */
+  function initCursorGlow() {
+    if (isTouch || prefersReducedMotion) return;
+    const glow = document.getElementById('cursorGlow');
+    let tx = window.innerWidth / 2, ty = window.innerHeight / 2;
+    let cx = tx, cy = ty;
+    let active = false;
 
-  }, 380); // slight cinematic lead
-
-  // CTA ripple handler
-  cta.addEventListener('click', function(ev){
-    createRipple(ev);
-    // subtle feedback: tiny bounce
-    cta.animate([
-      { transform: 'scale(1)' },
-      { transform: 'scale(0.98)' },
-      { transform: 'scale(1)' }
-    ], {
-      duration: 320,
-      easing: 'cubic-bezier(.2,.9,.2,1)'
+    window.addEventListener('mousemove', (e) => {
+      tx = e.clientX; ty = e.clientY;
+      if (!active) { active = true; glow.classList.add('active'); }
     });
-    // Place for user action: open modal / navigate — currently just visual
-  });
 
-  // Accessibility: keyboard activation ripple (center)
-  cta.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter' || e.key === ' '){
-      // synthetic ripple at center
-      const rect = cta.getBoundingClientRect();
-      const fake = { currentTarget: cta, clientX: rect.left + rect.width/2, clientY: rect.top + rect.height/2 };
-      createRipple(fake);
+    function loop() {
+      cx += (tx - cx) * 0.12;
+      cy += (ty - cy) * 0.12;
+      glow.style.transform = `translate(${cx}px, ${cy}px) translate(-50%, -50%)`;
+      requestAnimationFrame(loop);
+    }
+    loop();
+  }
+
+  /* -------------------------------------------------------------------
+     PARALLAX — background blobs + hero card respond to pointer/touch
+     ------------------------------------------------------------------- */
+  function initParallax() {
+    if (prefersReducedMotion) return;
+    const blobs = document.querySelectorAll('.bg-blob');
+    const heroCard = document.getElementById('heroCard');
+    let px = 0, py = 0, cx = 0, cy = 0;
+
+    function apply() {
+      cx += (px - cx) * 0.06;
+      cy += (py - cy) * 0.06;
+      blobs.forEach((b, i) => {
+        const depth = (i + 1) * 6;
+        b.style.transform = `translate(${cx * depth}px, ${cy * depth}px)`;
+      });
+      if (heroCard) {
+        heroCard.style.transform = `translate(${cx * 10}px, ${cy * 10}px)`;
+      }
+      requestAnimationFrame(apply);
+    }
+
+    function setFromPointer(x, y) {
+      px = (x / window.innerWidth - 0.5) * 2;
+      py = (y / window.innerHeight - 0.5) * 2;
+    }
+
+    window.addEventListener('mousemove', (e) => setFromPointer(e.clientX, e.clientY));
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches[0]) setFromPointer(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+
+    apply();
+  }
+
+  /* -------------------------------------------------------------------
+     SCROLL REVEAL — IntersectionObserver toggles .in-view
+     ------------------------------------------------------------------- */
+  function initScrollReveal() {
+    const items = document.querySelectorAll('.reveal-on-scroll');
+    items.forEach((el, i) => el.style.setProperty('--i', i % 8));
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+        }
+      });
+    }, { threshold: 0.18, rootMargin: '0px 0px -60px 0px' });
+
+    items.forEach((el) => observer.observe(el));
+  }
+
+  /* -------------------------------------------------------------------
+     SCROLL PROGRESS BAR + DOT NAV ACTIVE STATE
+     ------------------------------------------------------------------- */
+  function initScrollProgress() {
+    const fill = document.getElementById('scrollProgressFill');
+    const sections = document.querySelectorAll('[data-section]');
+    const dots = document.querySelectorAll('.dot');
+
+    function update() {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      fill.style.width = pct + '%';
+
+      // Determine active section (closest to viewport center)
+      let activeIndex = 0;
+      let minDist = Infinity;
+      sections.forEach((sec, i) => {
+        const rect = sec.getBoundingClientRect();
+        const dist = Math.abs(rect.top + rect.height / 2 - window.innerHeight / 2);
+        if (dist < minDist) { minDist = dist; activeIndex = i; }
+      });
+      dots.forEach((d, i) => d.classList.toggle('active', i === activeIndex));
+    }
+
+    window.addEventListener('scroll', throttle(update, 60), { passive: true });
+    update();
+  }
+
+  function initDotNavClicks() {
+    document.querySelectorAll('.dot').forEach((dot) => {
+      dot.addEventListener('click', () => {
+        const target = document.getElementById(dot.dataset.target);
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  }
+
+  /* -------------------------------------------------------------------
+     TIMELINE FILL — line grows as the timeline scrolls into view
+     ------------------------------------------------------------------- */
+  function initTimelineFill() {
+    const track = document.getElementById('timelineTrack');
+    const fill = document.getElementById('timelineFill');
+    if (!track || !fill) return;
+
+    function update() {
+      const rect = track.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const total = rect.height;
+      let progressed = vh * 0.6 - rect.top;
+      progressed = Math.max(0, Math.min(progressed, total));
+      const pct = total > 0 ? (progressed / total) * 100 : 0;
+      fill.style.height = pct + '%';
+    }
+    window.addEventListener('scroll', throttle(update, 40), { passive: true });
+    update();
+  }
+
+  /* -------------------------------------------------------------------
+     BUTTONS — ripple effect + smooth scroll for hero CTA
+     ------------------------------------------------------------------- */
+  function initButtons() {
+    document.querySelectorAll('.glow-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const ripple = document.createElement('span');
+        const size = Math.max(rect.width, rect.height) * 1.4;
+        ripple.className = 'ripple';
+        ripple.style.width = ripple.style.height = size + 'px';
+        ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+        ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+        btn.appendChild(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove());
+      });
+    });
+
+    const beginBtn = document.getElementById('beginBtn');
+    if (beginBtn) {
+      beginBtn.addEventListener('click', () => {
+        document.getElementById('story').scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+
+    const restartBtn = document.getElementById('restartBtn');
+    if (restartBtn) {
+      restartBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+  }
+
+  /* -------------------------------------------------------------------
+     SURPRISE SECTION — wax seal click reveals message + heart burst
+     ------------------------------------------------------------------- */
+  function initSurprise() {
+    const seal = document.getElementById('waxSeal');
+    const reveal = document.getElementById('surpriseReveal');
+    if (!seal || !reveal) return;
+
+    seal.addEventListener('click', () => {
+      seal.classList.add('opened');
+      reveal.classList.add('visible');
+      const rect = seal.getBoundingClientRect();
+      spawnBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, 16);
+    });
+  }
+
+  function spawnBurst(x, y, count) {
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.left = '0';
+    container.style.top = '0';
+    container.style.width = '0';
+    container.style.height = '0';
+    container.style.zIndex = '80';
+    container.style.pointerEvents = 'none';
+    document.body.appendChild(container);
+
+    for (let i = 0; i < count; i++) {
+      const heart = document.createElement('div');
+      heart.textContent = '♥';
+      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+      const dist = Math.random() * 120 + 60;
+      const dx = Math.cos(angle) * dist;
+      const dy = Math.sin(angle) * dist - 40;
+      heart.style.position = 'fixed';
+      heart.style.left = x + 'px';
+      heart.style.top = y + 'px';
+      heart.style.color = Math.random() > 0.5 ? '#e8567d' : '#d8a05a';
+      heart.style.fontSize = (Math.random() * 14 + 12) + 'px';
+      heart.style.opacity = '1';
+      heart.style.transition = 'transform 1s cubic-bezier(0.22,1,0.36,1), opacity 1s ease-out';
+      heart.style.willChange = 'transform, opacity';
+      container.appendChild(heart);
+
+      requestAnimationFrame(() => {
+        heart.style.transform = `translate(${dx}px, ${dy}px) scale(0.4) rotate(${Math.random() * 60 - 30}deg)`;
+        heart.style.opacity = '0';
+      });
+    }
+    setTimeout(() => container.remove(), 1100);
+  }
+
+  /* -------------------------------------------------------------------
+     UTILITIES
+     ------------------------------------------------------------------- */
+  function debounce(fn, wait) {
+    let t;
+    return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+  }
+  function throttle(fn, wait) {
+    let last = 0;
+    return (...args) => {
+      const now = Date.now();
+      if (now - last >= wait) { last = now; fn(...args); }
+    };
+  }
+
+  /* -------------------------------------------------------------------
+     INIT — run once DOM is ready
+     ------------------------------------------------------------------- */
+  document.addEventListener('DOMContentLoaded', () => {
+    initLoader();
+    initFloatingHearts();
+    initCursorGlow();
+    initScrollReveal();
+    initScrollProgress();
+    initDotNavClicks();
+    initTimelineFill();
+    initButtons();
+    initSurprise();
+    if (!prefersReducedMotion) {
+      initParticles();
+      initParallax();
     }
   });
-}
-
-/* Kick off after DOM ready and fonts likely loaded (optional font load fallback) */
-document.addEventListener('DOMContentLoaded', () => {
-  // wait for fonts to be ready for nicer intro timing (non-blocking)
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(start).catch(start);
-  } else {
-    setTimeout(start, 80);
-  }
-});
-
-/* Clean up on unload */
-window.addEventListener('beforeunload', () => {
-  cancelAnimationFrame(animFrame);
-  if(rafId) cancelAnimationFrame(rafId);
-  if(keepHeartsInterval) clearInterval(keepHeartsInterval);
-});
-
-/* Optional: small performance tip, pause animations when page not visible */
-document.addEventListener('visibilitychange', () => {
-  if(document.hidden){
-    cancelAnimationFrame(animFrame);
-    if(rafId) cancelAnimationFrame(rafId);
-  } else {
-    lastFrame = performance.now();
-    animFrame = requestAnimationFrame(drawFrame);
-    if(!rafId) parallaxLoop();
-  }
-});
+})();
