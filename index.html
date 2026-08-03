@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Chakuli 🎀 — This Is For You</title>
+<title>Forever & Always — A Love Story</title>
 <meta name="description" content="A premium interactive romantic experience.">
 
 <!-- Google Fonts: Poppins for body/UI, Great Vibes for romantic script display -->
@@ -31,15 +31,17 @@
 <!-- Cursor glow (desktop only, disabled on touch) -->
 <div class="cursor-glow" id="cursorGlow"></div>
 
-<!-- Background music -->
-<audio id="bgMusic" src="our-song.mp3" loop preload="auto"></audio>
+<!-- Cursor glow (desktop only, disabled on touch) -->
+<div class="cursor-glow" id="cursorGlow"></div>
 
+<!-- Background music -->
+  <audio id="bgMusic" src="our-song.mp3" loop preload="auto"></audio>
 <button id="musicToggle" class="music-toggle" aria-label="Toggle music">
   <span class="music-icon playing">
     <span></span><span></span><span></span>
   </span>
 </button>
-
+  
 <!-- Ambient animated background layers, shared across the whole page -->
 <div class="bg-scene" aria-hidden="true">
   <div class="bg-gradient"></div>
@@ -75,16 +77,17 @@
     <div class="glass-card hero-card" id="heroCard">
       <span class="eyebrow">a story written in two hearts</span>
       <h1 class="script-heading hero-title">
-        <span class="reveal-line" style="--d:0">Chakuli 🎀,</span>
-        <span class="reveal-line" style="--d:1">this is for you</span>
+        <span class="reveal-line" style="--d:0">Forever</span>
+        <span class="reveal-line amp" style="--d:1">&amp;</span>
+        <span class="reveal-line" style="--d:2">Always</span>
       </h1>
-      <p class="hero-subtitle reveal-fade" style="--d:2">Every friendship has a beginning worth remembering.<br>This one begins here, with you.</p>
-      <button class="glow-btn reveal-fade" style="--d:3" id="beginBtn">
+      <p class="hero-subtitle reveal-fade" style="--d:3">Every love has a beginning worth remembering.<br>This one begins here, with you.</p>
+      <button class="glow-btn reveal-fade" style="--d:4" id="beginBtn">
         <span class="glow-btn-label">Begin Our Story</span>
         <span class="glow-btn-shine"></span>
       </button>
     </div>
-    <div class="scroll-cue reveal-fade" style="--d:4" aria-hidden="true">
+    <div class="scroll-cue reveal-fade" style="--d:5" aria-hidden="true">
       <span></span>
       <p>scroll to unfold</p>
     </div>
@@ -95,13 +98,13 @@
   <!-- ============================================= -->
   <section id="story" class="section story-section" data-section>
     <div class="section-inner">
-      <span class="eyebrow center reveal-on-scroll">I want to speak from my heart</span>
-      <h2 class="script-heading section-title reveal-on-scroll">Happiest birthday chakuli🎀</h2>
+      <span class="eyebrow center reveal-on-scroll">chapter one</span>
+      <h2 class="script-heading section-title reveal-on-scroll">Where It All Began</h2>
       <div class="story-lines">
-        <p class="story-line reveal-on-scroll">Aaj ka din sirf tumhara hai, isliye aaj sirf smile karo, enjoy karo aur bahut saara cake khao. 😄 Main dil se wish karta hoon ki tumhari life mein itni khushiyan aayein ki har din birthday jaisa lage.
-Stay happy, stay blessed, aur hamesha aise hi cute aur amazing rehna. Tumhari har wish poori ho aur tum hamesha life mein aage badhti raho.Once again, Happy Birthday! 🎂🌸✨</p>
-        
-        <p class="story-line story-line-accent reveal-on-scroll">You are really the most special person in my life 🤗,<br>And you always will be.🥰</p>
+        <p class="story-line reveal-on-scroll">It started as the quietest kind of moment —</p>
+        <p class="story-line reveal-on-scroll">a glance held a second too long,</p>
+        <p class="story-line reveal-on-scroll">a laugh that felt like home.</p>
+        <p class="story-line story-line-accent reveal-on-scroll">And somehow, without asking permission,<br>you became my favorite person to love.</p>
       </div>
     </div>
   </section>
@@ -154,7 +157,7 @@ Stay happy, stay blessed, aur hamesha aise hi cute aur amazing rehna. Tumhari ha
   </section>
 
   <!-- ============================================= -->
-  <!-- 4. GALLERY — 2 keepsake photos                 -->
+  <!-- 4. GALLERY — polaroid keepsakes                -->
   <!-- ============================================= -->
   <section id="gallery" class="section gallery-section" data-section>
     <div class="section-inner">
@@ -162,18 +165,30 @@ Stay happy, stay blessed, aur hamesha aise hi cute aur amazing rehna. Tumhari ha
       <h2 class="script-heading section-title reveal-on-scroll">Kept Like Treasure</h2>
       <p class="section-sub reveal-on-scroll">Little frames, holding big feelings.</p>
 
-      <div class="polaroid-grid two-photos">
+      <div class="polaroid-grid">
         <div class="polaroid reveal-on-scroll" style="--r:-6deg;">
-          <div class="polaroid-art art-1">
-            <img src="images/photo1.jpg" alt="a favorite memory">
-          </div>
+          <div class="polaroid-art art-1"><span>♥</span></div>
           <p class="polaroid-caption">that first sunset</p>
         </div>
-        <div class="polaroid reveal-on-scroll" style="--r:5deg;">
-          <div class="polaroid-art art-2">
-            <img src="images/photo2.jpg" alt="a favorite memory">
-          </div>
-          <p class="polaroid-caption">us, always</p>
+        <div class="polaroid reveal-on-scroll" style="--r:4deg;">
+          <div class="polaroid-art art-2"><span>♥</span></div>
+          <p class="polaroid-caption">rainy afternoons</p>
+        </div>
+        <div class="polaroid reveal-on-scroll" style="--r:-3deg;">
+          <div class="polaroid-art art-3"><span>♥</span></div>
+          <p class="polaroid-caption">the quiet drives</p>
+        </div>
+        <div class="polaroid reveal-on-scroll" style="--r:7deg;">
+          <div class="polaroid-art art-4"><span>♥</span></div>
+          <p class="polaroid-caption">dancing, badly</p>
+        </div>
+        <div class="polaroid reveal-on-scroll" style="--r:-5deg;">
+          <div class="polaroid-art art-5"><span>♥</span></div>
+          <p class="polaroid-caption">late night talks</p>
+        </div>
+        <div class="polaroid reveal-on-scroll" style="--r:2deg;">
+          <div class="polaroid-art art-6"><span>♥</span></div>
+          <p class="polaroid-caption">tomorrow, and tomorrow</p>
         </div>
       </div>
     </div>
@@ -263,4 +278,4 @@ Stay happy, stay blessed, aur hamesha aise hi cute aur amazing rehna. Tumhari ha
 
 <script src="script.js"></script>
 </body>
-</html>
+            </html>
