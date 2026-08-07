@@ -191,37 +191,45 @@
   /* -------------------------------------------------------------------
      PARALLAX — background blobs + hero card respond to pointer/touch
      ------------------------------------------------------------------- */
-  function initParallax() {
-    if (prefersReducedMotion) return;
-    const blobs = document.querySelectorAll('.bg-blob');
-    const heroCard = document.getElementById('heroCard');
-    let px = 0, py = 0, cx = 0, cy = 0;
+      function initParallax() {
+  if (prefersReducedMotion) return;
 
-    function apply() {
-      cx += (px - cx) * 0.06;
-      cy += (py - cy) * 0.06;
-      blobs.forEach((b, i) => {
-        const depth = (i + 1) * 6;
-        b.style.transform = `translate(${cx * depth}px, ${cy * depth}px)`;
-      });
-      if (heroCard) {
-        heroCard.style.transform = `translate(${cx * 10}px, ${cy * 10}px)`;
-      }
-      requestAnimationFrame(apply);
+  const blobs = document.querySelectorAll(".bg-blob");
+  const heroCard = document.getElementById("heroCard");
+
+  let px = 0,
+    py = 0;
+  let ticking = false;
+
+  function update() {
+    blobs.forEach((b, i) => {
+      const depth = (i + 1) * 4;
+      b.style.transform = `translate(${px * depth}px, ${py * depth}px)`;
+    });
+
+    if (heroCard) {
+      heroCard.style.transform = `translate(${px * 8}px, ${py * 8}px)`;
     }
 
-    function setFromPointer(x, y) {
-      px = (x / window.innerWidth - 0.5) * 2;
-      py = (y / window.innerHeight - 0.5) * 2;
-    }
-
-    window.addEventListener('mousemove', (e) => setFromPointer(e.clientX, e.clientY));
-    window.addEventListener('touchmove', (e) => {
-      if (e.touches[0]) setFromPointer(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: true });
-
-    apply();
+    ticking = false;
   }
+
+  function move(x, y) {
+    px = (x / window.innerWidth - 0.5) * 2;
+    py = (y / window.innerHeight - 0.5) * 2;
+
+    if (!ticking) {
+      requestAnimationFrame(update);
+      ticking = true;
+    }
+  }
+
+  window.addEventListener(
+    "mousemove",
+    (e) => move(e.clientX, e.clientY),
+    { passive: true }
+  );
+      }
 
   /* -------------------------------------------------------------------
      SCROLL REVEAL — IntersectionObserver toggles .in-view
