@@ -232,7 +232,8 @@ img{ max-width:100%; display:block; }
   width: min(90vw, 640px);
   padding: clamp(40px, 6vw, 72px) clamp(28px, 6vw, 60px);
   text-align:center;
-  animation: cardFloat 7s ease-in-out infinite;
+   animation: cardFloat 12s ease-in-out infinite;
+  
 }
 @keyframes cardFloat{ 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-10px);} }
 
