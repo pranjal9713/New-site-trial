@@ -167,26 +167,20 @@
   /* -------------------------------------------------------------------
      CURSOR GLOW — desktop only, follows pointer with slight lag
      ------------------------------------------------------------------- */
-  function initCursorGlow() {
-    if (isTouch || prefersReducedMotion) return;
-    const glow = document.getElementById('cursorGlow');
-    let tx = window.innerWidth / 2, ty = window.innerHeight / 2;
-    let cx = tx, cy = ty;
-    let active = false;
+       function initCursorGlow() {
+  if (isTouch || prefersReducedMotion) return;
 
-    window.addEventListener('mousemove', (e) => {
-      tx = e.clientX; ty = e.clientY;
-      if (!active) { active = true; glow.classList.add('active'); }
-    });
+  const glow = document.getElementById("cursorGlow");
 
-    function loop() {
-      cx += (tx - cx) * 0.12;
-      cy += (ty - cy) * 0.12;
-      glow.style.transform = `translate(${cx}px, ${cy}px) translate(-50%, -50%)`;
-      requestAnimationFrame(loop);
-    }
-    loop();
-  }
+  window.addEventListener(
+    "mousemove",
+    (e) => {
+      glow.style.transform = `translate(${e.clientX}px,${e.clientY}px) translate(-50%,-50%)`;
+      glow.classList.add("active");
+    },
+    { passive: true }
+  );
+       }
 
   /* -------------------------------------------------------------------
      PARALLAX — background blobs + hero card respond to pointer/touch
